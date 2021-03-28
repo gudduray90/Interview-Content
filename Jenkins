@@ -1,0 +1,319 @@
+
+Github passwd----Asdf@89@123
+
+Jenkins token----114f21a901b4aecd87b68b2addb5c0c75d
+
+
+Source code build or compiler ---
+
+1. For java we used maven
+2. for android we used gradle
+3. for .net we used ant
+########################## Create User and Assign roles ##############################
+
+check home directory of jenkins ----> click on manage jenkins----> Configure jenkins and at the top you can see home directory.
+
+Create new users-----> Manage jenkins--->Manage users---->Create users
+
+Change user name-----> Click on user drop down----->configure---->then we can change user name and save it.
+
+manage user roles----> We need do install role_base_Authroization_strategy plugin and restart jenkins. now go to manage jenkins----> Configure global security ----> here in authorization section you will find role-base-strategy so select this one and save.
+
+Grant access of users----> manage jenkins ---> Manage and Assign Roles( if you are not getting this option means you have not selelcted role base strategy inside authorization)---->manage roles---> Create role in global roles and provide relevant access for that role----> Project role----> role to add (Developer) , Pattern (Dev.*) and add (It means developer can access the project which started like Dev*) now select permission----> save it.
+
+Assign the roles of users(manage jenkins--->manage and assign roles---->Assign roles)----> global roles (Added user here and select roles), Project roles (Add users and assign roles here)
+
+Basic configuration of jenkins-----> go to manage jenkines/Configure System/--->
+1. You can check your jenkins HOME DIRECTORY
+2. You can change jenkines home directory.  (In window, Not in Linux)
+3. you can set any message which will show at jenkins dashboard (We can provid HTML (If HTML text is hot showing then go to manage-jenkines/Configure global Security---change markup formatter) or plain text)
+4. No of Exuters---> You can set here how many job jenkins will start parallel
+5. Labels----> Suppose with jenkins two more system is working like master, node1, node2 and you want that your job will be execute from node2 then you will select labels and select usages like only build jobs with label expression matching this node. Now at the time of job creation you can select (Restrict where this project can be run) in general section and give nodename in label expression.
+5. Quite period----> This is the time where jenkines wait before triggering job for pull code from git. 
+6. SCM checkout retry count----> How many times jenkins will try to pull the code if it gets failed.
+7. Ristict project naming---> We can ristrict that project naming like test.* means every project name should be start with test*
+8. Global properties----> Set global properties or variables
+9. Shell executable---> We can define that from where executable command will be execute.
+
+
+#######################################################################################
+
+Credential plugins
+
+click on credentials---> Global Credentials--->Add Credentials Now you can add the crediential
+
+Now we can use this credential in our jobs
+
+################################################################################
+
+Send notification on gmail----> manage jenkines/configure jenkines/
+then search E-mail Notification section
+in SMTP server----- smtp.gmail.com
+Now click on use SMTP notification
+Now enter username and password
+Now use SSL
+SMTP PORT---465 for gmail
+
+
+
+########################## Integrate github with jenkins #########################
+
+1. Install jenkins on linux machine
+2. Create a github account
+3. Go to github repository setting and click on webhook then click on add webhook then enter jenkins url like http://54.172.156.165:8080/github-webhook/ then Content type should be json ans enter Secret key then click on add webhook.
+
+########################## Pull code from git hub ###############################
+
+1. Create a job and in source code management section select git then enter git url "https://github.com/gudduray90/javaprogram.git" if it will geive error then check git sholud be install on your jenkins machine.
+
+###################### Scriptrd Pipeline #############################################
+
+node
+	{
+	   pollSCM('*/1 * * * *')
+	 stage('Hit Checkout') {
+		git 'ssh://git@code.airtelworld.in:7999/air/retailer_springboot.git'
+	 }
+	 
+	 stage('Build'){
+		ssh 'mvn -f Mitra/pom.xml clean install -U'
+	 }
+	 
+	 stage('Backup'){
+		ssh '''ssh -q -tt testuser@10.10.10.10 << EOF
+		if [ -f /opt/SPRINTBOOT/mitratranning.jar]; hten mv opt/SPRINTBOOT/mitratranning.jar opt/SPRINTBOOT/backup_jar/; echo "File does not exist"; fi
+		exit 0
+		EOF'''
+	 }
+	 
+	 dir('/hoe/jenkines/.jenkines/workspace/mitratranning/target'){
+	 stage('deploy and run'){
+	 ssh '''scp -r mitra.jar testuser@10.10.10.10:/opt/SPRINTBOOT/mitratranning/'''
+	 sh '''#!/bin/bash
+	 ssh -q -tt testuser@10.10.10.10 <<EOFsudo kill -9 \\`pgrep -f mitra.jar\\`
+	 cd /opt/SPRINGBOOT/ && chmod 777 /opt/SPRINGBOOT/mitra.jar
+	 sudo nohup java -jar mitra.jar &
+	 sudo kill -9 \\`pgrep -f 'sudo nohup'\\`
+	 exit 0
+	 EOF '''
+	 }
+	 }
+	 emailext body: '"Please go to ${BUILD_URL} and verify the build"', subject '"Job \'${JOB_NAME}\' (${BUILD_NUMBER}) is waiting for input "', to: mail_id
+	 }
+
+###################### Declarative Pipeline #############################################
+
+currentBuild.displayName = "Retailer-Release-#"+currentBuild.number
+
+pipeline{
+	agent any
+	
+	environment{
+	PATH = "/opt/maven3/bin:$PATH"
+	}
+	stages{
+		stage("Git CheckOut"){
+			steps{
+				git credientialsId: 'github', url: 'https://github.com/javahometech/myweb'
+			}
+		}
+		stage("Maven Build"){
+			steps{
+				sh "mvn clean package"
+				sh "mv target/*.war target/myweb.war"
+			}
+		}
+		stage("Deploy-Dev"){
+			steps{
+				sh """
+					scp -o StrictHostKeyChecking=no target/myweb.war  username@server_ip:path
+					
+					ssh username@server_IP stop the war
+					ssh username@server_IP start the war
+				"""
+			}
+		}
+	}
+}
+ 
+
+##################### Command #########################
+
+git clone git_url
+
+git commit -m "Commit 1" Helloworld.java
+
+git push origin master
+
+######################### Interview Questions #####################
+
+Q. Which tool have you used for implement CI/CD?
+Ans:- jenkins
+
+Q. Any alternate tool do you know for CI/CD?
+Ans:- Bamboo/udeploy/teamcity/tfs etc.
+
+Q. What is continuous Integration?
+Ans:- git hub ---> jenkins ---> maven----> junit----> sonarqube---> naxus
+
+Q. What type of jobs have you configured in jenkins?
+Ans:-
+
+Q. What is difference b/w freestyle and pipeline?
+Ans:-Freestyle projects are for orchestration simple jobs for a project. Pipeline Project is better either to set up a CD pipeline or to define the deployment pipeline as code.
+
+Q. What is pipeline?
+Ans:- Jenkins Pipeline (or simply "Pipeline") is a suite of plugins which supports implementing and integrating continuous delivery pipelines into Jenkins
+
+Q. What is declarative pipeline?
+Ans:- Declarative pipeline is a relatively new feature that supports the pipeline as code concept. It makes the pipeline code easier to read and write.
+
+Q. What is diff b/w declarative pipeline and scripted base pipeline?
+Ans:-
+
+a. Declarative pipeline is a relatively new feature that supports the pipeline as code concept. It makes the pipeline code easier to read and write. This code is written in a Jenkinsfile which can be checked into a source control management system such as Git.
+
+b. The scripted pipeline is a traditional way of writing the code. In this pipeline, the Jenkinsfile is written on the Jenkins UI instance.
+
+c. The declarative pipeline is defined within a block labelled ‘pipeline’ 
+
+d. The scripted pipeline is defined within a ‘node’.
+
+any — Which mean the whole pipeline will run on any available agent.
+none — Which mean all the stages under the block will have to declared with agent separately.
+label — this is just a label for the Jenkins environment
+docker — this is to run the pipeline in Docker environment.
+
+Q. Write the pipeline syntax?
+Ans:-
+
+Scripted Plpeline:---
+
+node {
+
+}
+
+Declaration pipeline:--
+
+pipeline {
+    /* insert Declarative Pipeline here */
+}
+
+Q. What is master/slave architecture? what is the use of master/slave?
+Ans:- 
+
+Jenkins checks the Git repository at periodic intervals for any changes made in the source code.
+
+Each builds requires a different testing environment which is not possible for a single Jenkins server. In order to perform testing in different environments, Jenkins uses various Slaves as shown in the diagram.
+
+Jenkins Master requests these Slaves to perform testing and to generate test reports.
+
+setup slave----> manage jenkins---->manage nodes and cloud----> new node----> 
+Enter the details of the node slave machine. Here no. of executers in nothing but no. of jobs that  this slave can run parallely. Here we have kept it to 2. The Labels for which the name is entered as “Slave1” is what can be used to configure jobs to use this slave machine.Select Usage to Use this node as much as possible. For launch method we select the option of “Launch agent by connecting it to the master”. If this option is not visible then go to Jenkins home page -> Manage Jenkins -> Configure Global Security. Here in the Agents section click on Random and Save it. Now you will find the required option. Enter Custom WorkDir path as the workspace of your slave node. In Availability select “Keep this agent online as much as possible”.Click on Save.
+
+Now since your slave is up and running, lets execute a job on slave.
+
+
+Q. How many we can connect the slaves?
+Ans:- As many as I need. If you're not running any builds on master node even not so powerful server will be able to handle ~250 slaves.
+
+Q. How many way we can provide security for your jenkins server?
+Ans:- There are 3 ways 
+
+a. The default way is to store user data and credentials in an internal database. 
+
+b. Configure Jenkins to use the authentication mechanism defined by the application server on which it is deployed. 
+
+c. Configure Jenkins to authenticate against LDAP server
+
+Q. What is sonarqube? Hvae you configure? How you configure?
+Ans:-
+
+SonarQube is a very universal tool for static code analysis that has become more or less the industry standard. Because it is covering the most popular programming languages, it's the most complex solution that covers most use cases using a single application
+
+1. Log into Jenkins as an administrator and go to Manage Jenkins > Global Tool Configuration
+2. Click on Add SonarScanner for MSBuild
+3. Add an installation of the latest available version. Check Install automatically to have the SonarScanner for MSBuild automatically provisioned on your Jenkins executors
+
+If you do not see any available version under Install from GitHub, first go to Manage Jenkins > Manage Plugins > Advanced and click on Check now
+
+Job Configuration
+
+1. Configure the project, and go to the Build section.
+2. Add the SonarQube for MSBuild - Begin Analysis to your build
+3. Configure the SonarQube Project Key, Name, and Version in the SonarScanner for MSBuild - Begin Analysis build step
+4. Add the MSBuild build step or the Execute Windows batch command to execute the build with MSBuild 14 (see compatibility) to your build.
+5. Add the SonarQube for MSBuild - End Analysis build steps to your build
+
+Analyzing a Java project with Maven or Gradle
+
+Global Configuration
+
+Log into Jenkins as an administrator and go to Manage Jenkins > Configure System
+Scroll to the SonarQube servers section and check Enable injection of SonarQube server configuration as build environment variables
+	
+
+Q. What type of artifactory repository tool have you used?
+Ans-Nexus/jfrog/s3
+
+Q. What is the use of artifactory tools?
+Ans:- Jenkins uses Artifactory to supply artifacts and resolve dependencies when creating the build, and also as a target to deploy build output to the corresponding local repository.
+
+Q. How you declare a variable in pipeline?
+Ans:- def foo = "foo"
+
+Q. What is DSL language? 
+Ans:- Domain specific language
+
+Q. What is upstream/downstream projects? What is the use of it? Which scenario you configure?
+Ans:- An upstream job is a configured project that triggers a project as part of its execution. A downstream job is a configured project that is triggered as part of a execution of pipeline.
+
+Q. If a have 10 repositories how many jobs you can configure?
+Ans:- 10 jobs
+
+Q. Do you have experience to install jenkins?
+Ans:- Yes i have.
+
+Q. How you configure jdk, maven, gradle etc?
+Ans:- 
+JDK---
+click on the link Manage Jenkins and click on Configure System
+click on "Add JDK". The easiest way to configure JDK is to provide a name and path of the java installation directory.
+
+Gradle---
+Go to Manage Jenkins . Go to Global Tool Configuration to configure the tools, their locations, and automatic installers. Go to the Gradle section. Give the Name and click on Install Automatically , or give the path to the existing location where the Gradle installation is available
+
+maven----
+1. Go to Jenkins Dashboard ->Manage Jenkins ->Manage plugins ->Available ->Maven Integration ->Install
+
+2. Go to Manage Jenkins->Global tool configuration->Maven -> Add Maven_home variable value (i.e. path of the maven file on your system).
+
+3. Go to Jenkins Dashboard -> New Item -> Maven Project option will be available
+
+II. Build a Maven project
+
+Go to Jenkins Dashboard -> New Item -> Choose name for the Maven Project (e.g. MyFirstMavenExample)
+
+default path of maven----${user.home}/.m2/repository/  
+
+Q. In my environment i have diff version for java implementation projects is there? How you configure multiple jdk's?
+Ans:-click on the link Manage Jenkins and click on Configure System
+click on "Add JDK".
+
+Q. What are the plugins have you used in your projects?
+Ans:-
+
+Q. How to take backup my jenkins?
+Ans:- We can use thin backup plugin for taking backup of jenkins. We will backup .jenkins directory.
+
+Q. What is jenkins Home directory?
+Ans:- .jenkins in user home directory (default location is /var/lib/jenkins )
+
+Q. How to delete old build automacilly?
+Ans:-
+
+Q. How to configure multiple environment deployment?
+Ans:-
+
+
+
