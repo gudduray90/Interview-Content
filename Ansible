@@ -1,0 +1,574 @@
+1. Ansible is a configuration management tool.
+2. This is agent less and it is used for push mechanism
+3. Ansible execute task parally and reduce time of execution
+4. ansible written in python
+5. we can create a custom module
+
+###########################################################
+Execute module on remote server location-----
+
+--> /home/ansible/.ansible/tmp
+
+###########################################################
+
+1- invantory file --> list of target server ip's or list of FQDN of remote servers
+2- Ansible.cfg --> consist default location of configuration files.
+3- Module --> help to execute task on remote server.
+4- Playbook/Ad-hoc commands using moudles.
+
+###########################################################
+
+Ansible installation prerequeist----
+python should be 2.7 or greater
+sshd should be running
+
+###########################################################
+
+Default path of module-----
+
+- Default path of anisble --> #/etc/anisble
+- Default path of invantory file --> #/etc/ansible/hosts
+- Default path of modules --> #/usr/share/modules
+
+##########################################################
+grou of group----
+
+#vim /etc/hosts
+
+[web]
+192.168.1.2
+192.168.1.3
+192.168.1.4
+
+[dev]
+192.168.1.5
+192.168.1.6
+192.168.1.7
+
+[ops:children]  --> group of gropups
+web
+deb
+
+You can make groups of groups using the :children suffix 
+
+
+###########################################################
+
+Location of Ansible.cfg:-
+
+#/etc/ansible/ansible.cfg
+
+ 1- ANSBILE_CONFIG  --> enviornment variable
+ 2- ./ansible.cfg   --> currnet location of ansible.cfg of user
+ 3- ~/.ansible.cfg   --> file persent in ansible home dir
+ 4- /etc/ansible/ansible.cfg
+
+###########################################################
+ 
+list of module-----
+ansible-doc -l
+
+###########################################################
+
+How anisble works ?
+
+1- ansible check ansible.cfg
+2- check inventory file
+3- make ssh connection with client nodes
+4- module execute on mange node
+5- post execution module will be remove
+
+###########################################################
+
+Import variables and tasks in a one playbook---
+
+We will create three ymal file, one for variable and second for tasks and last one is for import variables and tasks like,
+
+#vim variable.yaml
+var1: value_of_var1_is_1
+var2: value_of_var2_is_2
+var3: value_of_var3_is_3
+var4: value_of_var4_is_4
+
+#vim tasks.yaml
+
+-
+  name: "Task 1"
+  command: touch /tmp/task/{{ var1 }}.txt
+-
+  name: "Task 2"
+  command: touch /tmp/task/{{ var2 }}.txt
+-
+  name: "Task 3"
+  command: touch /tmp/task/{{ var3 }}.txt
+-
+  name: "Task 4"
+  command: touch /tmp/task/{{ var4 }}.txt
+  
+#vim vars_tasks_import_playbook.yaml
+---
+ - name: "This play will import variable file and tasks file."
+   hosts: group1
+   vars_files:
+       - variable.yaml
+   tasks:
+      - include: tasks.yaml
+
+
+######################## FORK ########################
+
+forks value :- running parallelly execution on nodes we can configure according to our servers
+
+default value of froks --> 5
+
+#/etc/ansible/ansible.cfg --> froks= 10
+for serial --> forks= 1
+
+#ansible all -f 10 -m shell -a 'uptime'
+
+################### COPY ####################
+Transfer files :-
+copy module:
+
+#ansible web -m copy -a "src=/opt/index.html dest=/usr/share/nginx/html/"
+
+#ansible web -m copy -a "src=/opt/index.html dest=/usr/share/nginx/html/my.html"  --> will change name of file
+
+* idempotent --> ansible does not execute if it's already running 
+
+#ansible web -m copy -a "content='Hi i am guddu' dest=/tmp/my.txt"
+
+#ansible web -m copy -a "content='Hi i am guddu\n' dest=/tmp/my.txt backup=yes" 
+
+########################## FILE ########################
+
+File module:-
+create and delete file/directory
+
+
+#ansible web -m file -a "path=/tmp/guddu.txt state=touch mode=0777"        --> create file
+
+#ansible web -m file -a "path=/tmp/guddu.txt state=absent"                  --> delete file
+
+#ansible web -m file -a "path=/tmp/guddu state=directory mode=0777"
+
+#ansible web -m file -a "path=/tmp/guddu state=directory
+
+state --> absent/directory/file/hard/link/touch
+
+#ansible web -m file -a "path=/etc/my.txt state=touch" -b or --become    ---> -b or --become use for sudo privilage
+
+
+############################### File ###########################
+File module :-
+
+create and delete file /dir
+
+#ansible all -m file -a "path=/tmp/test.txt state=touch"
+
+#ansible all -m file -a "path=/tmp/test.txt state=touch mode=0777"
+
+#ansible all -m file -a "path=/tmp/test.txt state=absent"   --> delete file
+
+#ansible all -m file -a "path=/tmp/mydata state=directory"     --> make dir
+
+state option :-
+ - absent 
+ - directory
+ - file
+ - hard
+ - link
+ - touch
+
+#ansible all -m file -a "path=/root/test.txt state=touch"   --> permission denied 
+
+#ansible all -m file -a "path=/tmp/test.txt state=touch" -b  --> with privildge 
+
+-b / --become ---> to give root priviliages
+
+#ansible db -m ping --list-hosts  ---> list of nodes under group
+
+
+######################### YUM ################################
+
+TO install a package:-
+
+Linux --> yum
+ubuntu/Debian --> apt
+
+#ansible db -m yum -a "name=git state=present"  --> 
+
+#ansible db -m yum -a "name=git state=latest"   --> install latest packge
+
+#ansible db -m yum -a "name=git state=present" -b --> install with sudo privildge 
+
+#ansible db -m yum -a "name=httpd state=latest" -b 
+
+state --> 
+ - absent
+ - installed
+ - latest
+ - present
+ - removed 
+ 
+- name: Upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+	
+- name: Install package with multiple repos enabled
+  yum:
+    name: sos
+    enablerepo: "epel,ol7_latest"
+
+- name: Install package with multiple repos disabled
+  yum:
+    name: sos
+    disablerepo: "epel,ol7_latest"
+
+######################## Defaults FACTS ###########################
+
+Ansible Facts:-
+it is information about managed nodes like:- OS,distribution,release, processor, python, ip,hostname etc..
+
+This task collect information from remote system and this is called gathering facts, and collect/Gathered information is called facts or variable.
+
+we can gather/collect facts using setup moudle in adhoc commands.
+
+*** Ansible playbook call setup module by default to perform gathering facts task.
+
+#ansible web -m setup   --> find facts
+
+#ansible web -m setup -a "filter=ansible_mounts"
+
+#ansible web -m setup -a "filter=ansible_architecture"
+
+Facts:- Infromation about mangaed nodes
+  - default facts
+  - custom facts
+
+#############################  Custom facts  ##################################
+
+Custom facts :- extra information about remote node
+
+-- We can get some extra facts of remote machine
+-- We can get version of httpd,git,python etc of remote node in json format.
+-- *.fact result stored in ansible_local variable.
+
+
+#ansible all -m shell -a "git --version"   -------------- command for checking git version
+#ansible all -m shell -a "/usr/sbin/httpd --version"   -------------- command for checking httpd version
+
+Create custom facts file location:=
+- create /etc/ansible/facts.d on remote nodes
+- inside of facts.d place one more custom facts files with the extention as *.fact
+- By default, output of fact file should be a json.
+- fact file should have execution permisson.
+
+Create below file on remote machin for these info,
+
+mkdir /etc/anisble/facts.d/
+
+cd /etc/anisble/facts.d
+
+#vim python-git-version.fact
+
+#!/bin/bash
+PYTHON_v= $(python --version | awk '{print $3}')
+GIT_v= $(git --version | awk '{print $3}')
+
+
+cat << EOF
+{ "Git_Version": "$GIT_v",
+   "httpd_version": "$httpd_v"
+}
+EOF
+
+#chmod 755 git_httpd-version.fact
+#./git_httpd-version.fact   --> 
+
+
+##########################   ROLES   #################################
+
+Roles----- In roles we can create seperate files for each task like variables, tasks,file handlers,meta, template, tests
+
+We can create default role structure from command line,
+
+#ansible-galaxy init roles_webserver --offline ---> offline means we are not going to download default structure from ansible galaxy web.
+
+#tree ROLES_WEBSERVER
+
+ROLES_WEBSERVER/
+	DEFAULTS
+		MAIN.YML			-------- Default variables for the roles
+	FILES					-------- contains files to copy to destination 
+	HANDLERS
+		MAIN.YML			-------- HANDLERS will be define in HANDLERS main.yml and it is based on notify
+	META
+		MAIN.YML			-------- Meta data will be define in meta main.yml about current role
+	TASKS					-------- List of task to be execute by the role
+		MAIN.YML
+	TEMPLATES				-------- Tamplate will be define in vars main.yml
+	TESTS					
+		MAIN.YML			-------- tasks will be define in tasks main.yml
+	VARS					
+		MAIN.YML			-------- Variable will be define in vars main.yml
+
+
+Now we can create any playbook and call above roles,
+
+vim deploy_webserver.yml
+
+---
+ - name: This play will call roles
+   hosts: group1
+   roles:
+     - ROLES_WEBSERVER
+
+#ansible-playbook -i hosts deploy_webserver.yml --syntax-check
+
+#ansible-playbook -i hosts deploy_webserver.yml
+
+###########################################################
+
+Ansible Inventories --> collection of manged nodes
+
+- static inventory
+- dynamic inventory  --> fetch automaticall ip of servers 
+
+- Dynamic inventory are scripts like shell/python for dynamic enviorments
+- cloud in dynamic inventory
+
+For AWS:-
+
+- downlaod ec2.ini and ec2.py on home directory from offical dynamic directory files.
+
+#./ec2.py    --> run command
+#sudo pip2 install boto
+ec2.py use boto 
+
+*** assgin AWS iam role to ansible engine node
+
+#./ec2.py
+
+AWS --> ansible engine  node--> IAM ROLE --> FULL ec2 access
+
+#./ec2.py
+
+#ansible -i ec2.py ec2 -m ping
+
+ec2 --> ips of aws nodes
+
+#ansible -i ec2.py us_east-la -m ping
+
+groups in ec2.py 
+
+_________________________________________
+vim aws_dynamic.py
+
+#!/bin/python
+import sys
+try:
+  import boto3
+except Exception as e:
+  print(e)
+  print ("plese install boto3")
+  sys.exit(1)
+
+def main()
+   ec2
+
+###########################   RAW Module   ###########################
+
+If python is not install on any remote/managed server then we should use RAW module like,
+
+#ansible db -m ping --> python not installed
+#ansible db -m raw -a "uptime"
+#ansible db -m raw -a "scp index.html "  ------ Copy and download file.
+
+##########################  Debug module  ################################
+
+Debug module:-
+- This moudle prints statements during execution and can be useful for debugging variables or expressions.
+- Debug moudle accepts three parameters.
+  - msg      ------> We can print some extra message
+  - var      ------> We print only variable value, we can not print some extra message. 
+  - verbosity  ------> If we have used verbosity then that message will print when you will run *.yml with -v option
+
+#vim print_msg.yml
+
+---
+- hosts: web
+  tasks:
+    - name: print msge
+      debug: msg="welcome"
+
+       "OR"
+
+---
+- name: my play name
+  hosts: web
+  tasks:
+    - name: print msge
+      debug: 
+        msg:
+          - "welcome"
+          -  "good morning"
+		  
+		  "OR"
+		  
+---
+- name: my play name
+  hosts: web
+  tasks:
+    - name: print msge
+      debug: 
+        msg: "Without verbosity msg."
+	- name: using verbosity
+      debug: 
+        msg: "Verbosity msg 1"
+        verbosity: 2
+
+#ansible-playbook print_msg.yml --sytax-check
+
+######################  Handlers  #######################
+Handlers:- Sometimes you want a task to run only when a change is made on a machine. 
+		   For example, you may want to restart a service if a task updates the configuration of that service, but not if the configuration is unchanged 
+
+---
+- hosts: all
+  user: ansible
+  become: yes
+  tasks:
+    - name: install httpd
+      action: yum name='{{packge}}' state=persent
+      notify: restart httpd
+  handlers:
+    - name: restart httpd
+      action: service name=httpd state=restarted
+...
+
+# dry run
+#ansible-playbook handler.yml --check
+
+####################  Loop  ########################
+
+Loops --> to perform repeted task
+
+
+---
+- hosts: all
+  become: yes
+  user: ansible
+  tasks:
+    - name add users
+      user: name='{{item}}' state=persent
+      with_items:
+        - guddu
+        - krishna
+        - shayam
+
+
+###################  varibale  #########################
+
+varibale --> used predifne for flexibility
+
+---
+- hosts: all
+  user: ansible
+  become: yes
+  vars:
+    package: httpd
+  tasks:
+    - name: install httpd
+      yum:
+	    name='{{packge}}'
+		state=persent
+...
+  
+
+############################################
+
+ansible playbook is written in YAML format.
+It is very easy and human readable
+Plabooke consitst list of task,templets 
+Playbook is a collection of moudles
+ - Target section
+ - variable section
+ - task section --> list of modules with sequential manner
+
+YAML - key value pair
+
+############################################
+
+Role --> A way of orgainsing task and related files to be latter called in a playbook
+
+Defaults
+Files
+handlerts
+meta
+tasks
+templates
+tests  --> test roles
+vars
+
+ansible-galaxy init webserver  --> to create role- webserver
+
+############################################
+
+ansible-vault create my_pass.yml  --> set password and type passwd
+ansible-vault view  my_pass.yml   --> to see the containt of file
+ansible-vault edit  mypass.yml    --> can edit file
+ansible-vault decrypt mypass.yml  --> decrpt data
+
+ansible-vault encrypt mypass.yml   --> encrypt your data
+
+--ask-vault-pass
+--vault-password-file
+
+
+#ansible-playbook -i hosts anisble-vault.yml --ask-valut-pass
+
+
+#ansible-playbook -i hosts anisble-vault.yml --valt-password-file pass.yml
+
+####################  tag  #######################
+
+ansible tag ---- Suppose that we have a playbook and in that play we have to define multiple tasks but we want to run any specfic task then we will use tags and we can run as required tasks.
+
+#vim tags_playbook.yaml
+
+---
+ - name: This play will execute tasks as per define tags.
+   hosts: group1
+   remote_user: ansible
+   become: yes
+   
+   tasks:
+    - name: "Installing Apache"
+	  yum: name= httpd state= latest
+	  tags:
+	   - installapache
+	   
+	- name: "Start apache"
+	  service: name= httpd state= started
+	  tags:
+	    - startapache
+		
+	- name: "Restart apache"
+	  service: name= httpd state= restarted
+	  tags:
+	    - always
+
+If we will define tags always then this task will execute every time and we dont need to define this tags at the time of play execution.
+#ansible-palybook -i hosts tags_playbook.yaml --syntax-check
+
+#ansible-palybook -i hosts tags_playbook.yaml --tags "installapache,startapache"
+
+###########################################
+
+multiple handler
+
+
+
+
