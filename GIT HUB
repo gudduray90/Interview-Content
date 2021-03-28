@@ -1,0 +1,69 @@
+Git :-
+
+#git clone
+#git push
+#git pull
+#git commit -a -m "added new"
+
+diff b/w git clone and pull:-
+   git clone --> copy compete project from remote to local
+   git pull --> copy incremental changes in project 
+   
+git stash -->  when you want switch in another branch without commit in current branch, then we can use git stash
+
+git .ignore --> we create file and write on .ignore
+
+#git checkout --> switch branch
+#git checkout -b feature --> create branch and switch
+#git branch --> to show braches
+
+#git log committed
+#git --amend --> to checking commit message
+#git rebase -->  Rebase apply all feature branch changes on top of master branch by creating new commit
+#git mearge ----> If we will merge mater branch to feature branch then feature branch commits keep as it is and commit history does not change
+
+#git commit -a   ---- This command commits any files you’ve added with the git add command and also commits any files you’ve changed since then.
+#git diff  ------- Diff command is used in git to track the difference between the changes made on a file
+#git diff [first branch] [second branch] ---------- This command shows the differences between the two branches mentioned
+#git reset ------- If you want to reset your index and working directory to the state of your last commit or to any commit then issue reset command
+#git reset –hard [commit] -------------- This command discards all history and goes back to the specified commit.
+#git status  ---- This command lists all the files that have to be committed.
+#git rm [file]  ------- This command deletes the file from your working directory and stages the deletion.
+#git log ----------- This command is used to list the version history for the current branch.
+#git log –follow[file]  ------------ This command lists version history for a file, including the renaming of files also.
+#git show [commit]   ------ This command shows the metadata and content changes of the specified commit.
+#git branch --------- This command lists all the local branches in the current repository.
+#git branch [branch name]  ----- This command creates a new branch.
+#git branch -d [branch name]  ------------ This command deletes the feature branch.
+#git checkout [branch name]   ---------- This command is used to switch from one branch to another.
+#git checkout -b [branch name]   ------ This command creates a new branch and also switches to it.
+#git merge [branch name]  -------- This command merges the specified branch’s history into the current branch.
+#git remote add [variable name] [Remote Server Link] ----------- This command is used to connect your local repository to the remote server.
+#git push [variable name] master   ------ This command sends the committed changes of master branch to your remote repository.
+#git push –all [variable name]  ---- This command pushes all branches to your remote repository.
+#git push [variable name] :[branch name]   ------ This command deletes a branch on your remote repository.
+#git pull [Repository Link]    ----- This command fetches and merges changes on the remote server to your working directory.
+#git stash save   ---- This command temporarily stores all the modified tracked files.
+#git stash pop  ------ This command restores the most recently stashed files.
+#git stash list   ----- This command lists all stashed changesets.
+#git stash drop  ----------- This command discards the most recently stashed changeset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
