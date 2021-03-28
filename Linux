@@ -1,0 +1,468 @@
+############################## Create LVM ####################################
+
+# fdisk -l
+# fdisk -cu /dev/sda
+	c – Switch off DOS-compatible mode it is Recommend to include this Option.
+	u – While listing the partition tables it will give us in sector instead of cylinder.
+	
+Next, follow the below steps to create new partition.
+
+1. Choose n to create new.
+2. Choose p to create a primary partition.
+3. Choose which number of partition we need to create.
+4. Press Enter twice to use the full space of the Disk.
+5. We need to change the type of newly created partition type t.
+6. Which number of partition need to change, choose the number which we created its 1.
+7. Here we need to change the type, we need to create LVM so we going to use the type code of LVM as 8e, if we do not know the type code Press L to list all type codes.
+8. Print the Partition what we created to just confirm.
+9. Here we can see the ID as 8e LINUX LVM.
+10. To accept the change type w and press Enter key
+
+#partprobe /dev/sdc
+
+# fdisk -l
+# pvcreate /dev/sda1 
+# vgcreate -s 32M tecmint_add_vg /dev/sda1
+# lvcreate -l (Extend size) -n (name_of_logical_volume) (volume_group) ----- Syntax
+# lvcreate -l 575 -n tecmint_documents tecmint_add_vg
+# lvcreate -L 18G -n tecmint_documents tecmint_add_vg
+
+Use p command to get the overview of hard disk
+
+Create filesystem----->
+
+# mkfs.ext4 /dev/tecmint_add_vg/tecmint_documents
+
+
+################################ Swap Memory #######################################
+
+Any service may use more memory in its peak time. Linux uses swap space to deal with the shortage of physical memory. The swap space is the space of hard disk that can be used as the memory. The preferred size for a swap partition is twice the amount of physical memory available on the system. If this is not possible, then the minimum size should be the same as the amount of memory installed.	
+
+#fdisk /dev/sdc1
+Use p command to get the overview of hard disk
+Choose n to create new
+Choose p to create a primary partition.
+Type t and press Enter key
+select 82 is used as partitions type identifier for swap space
+Verify the change with p command
+To accept the change type w and press Enter key
+#partprobe /dev/sdc
+
+# mkswap /dev/sdc1
+
+free : - This command display the current status of memory.
+
+swapon –s :- This command display the status of swap space.
+
+# swapon  [device_name]
+# free
+
+
+##############################  Hard/Soft links  ######################################## 
+
+Hard Link :
+A hard link acts as a copy (mirrored) of the selected file. It accesses the data available in the original file.
+If the earlier selected file is deleted, the hard link to the file will still contain the data of that file.
+
+#ln  [original filename] [link name] 
+
+Soft Link :
+A soft link (also known as Symbolic link) acts as a pointer or a reference to the file name. It does not access the data available in the original file. If the earlier file is deleted, the soft link will be pointing to a file that does not exist anymore.
+
+# ln -s source_file symbolic_link
+
+############################ Defaults Port ################################################
+Below are the different categories of ports:
+
+0-1023 – the Well Known Ports, also referred to as System Ports.
+1024-49151 – the Registered Ports, also known as User Ports.
+49152-65535 – the Dynamic Ports, also referred to as the Private Ports.
+
+20 – FTP Data (For transferring FTP data)
+
+21 – FTP Control (For starting FTP connection)
+
+22 – SSH (For secure remote administration which uses SSL to encrypt the transmission)
+
+23 – Telnet (For insecure remote administration)
+
+25 – SMTP (Mail Transfer Agent for e-mail server such as SEND mail)
+
+53 – DNS (Special service which uses both TCP and UDP)
+
+67 – Bootp
+
+68 – DHCP
+
+69 – TFTP (Trivial file transfer protocol uses udp protocol for connection less transmission of data)
+
+80 – HTTP/WWW(Apache)
+
+88 – Kerberos
+
+110 – POP3 (Mail delivery Agent)
+
+123 – NTP (Network time protocol used for time syncing uses UDP protocol)
+
+137 – NetBIOS (nmbd)
+
+139 – SMB-Samba (smbd)
+
+143 – IMAP
+
+161 – SNMP (For network monitoring)
+
+389 – LDAP (For centralized administration)
+
+443 – HTTPS (HTTP+SSL for secure web access)
+
+514 – Syslogd (udp port)
+
+636 – ldaps (both ctp and udp)
+
+873 – rsync
+
+989 – FTPS-data
+
+990 – FTPS
+
+993 – IMAPS
+
+1194 – openVPN
+
+1812 – RADIUS
+
+995 – POP3s
+
+2049 – NFS (nfsd, rpc.nfsd, rpc, portmap)
+
+2401 – CVS server
+
+3306 – MySql
+
+3690 – SVN
+
+$ netstat -lntu
+
+	-l –---> prints only listening sockets
+	-n –---> shows port number
+	-t –---> enables listing of tcp ports
+	-u –---> enables listing of udp ports
+
+############################## Check Memory usage ###################################
+Commands:--
+	free -m
+	vmstat
+	top
+	htop
+
+############################## File permission  #######################################
+
+Read: Allows a user to open and read the file
+Write: Allows a user to open and modify the file
+Execute: Allows a user to run the file.
+
+0: No permission
+1: Execute permission
+2: Write permission
+3: Write and execute permissions
+4: Read permission
+5: Read and execute permissions
+6: Read and write permissions
+7: Read, write and execute permissions
+
+################################# Inode number #######################################
+
+inode is the unique name given by the operating system to each file. Similarly, process id is the unique id given to each process.
+
+################################ Process states ######################################
+
+1. Ready: The process is created and is ready to run
+2. Running: The process is being executed
+3. Blocked or wait: Process is waiting for input from the user
+4. Terminated or Completed: Process completed execution, or was terminated by the Operating System
+5. Zombie: Process terminated, but the information still exists in the process table
+
+########################## Process Management System Calls ##############################
+The System Calls to manage the process are:
+
+fork () : Used to create a new process
+exec() : Execute a new program
+wait() : Wait until the process finishes execution
+exit() : Exit from the process
+And the System Calls used to get Process ID are:
+
+getpid():- get the unique process id of the process
+getppid():- get the parent process unique id
+
+################################## Tar command ##########################################
+
+# tar -cvzf filename.tar.gz -----> create tar file
+# tar -xvzf sample.tar.gz   -----> Exract tar file
+
+where c: create archive, x: extract, v: verbose, f: file
+
+################################# Latch ################################################
+
+A Latch is a temporary storage device controlled by timing signal which can either store 0 or 1. A Latch has two stable states (high-output or 1, and low-output or 0) and is mainly used to store state information. A Latch can store one bit of data as long as it is powered on. 
+
+################################### Regular Expressions and Grep ########################
+
+^	----->	  Match the beginning of the String
+$	----->	  Match the end of the String
+*	----->	  Match zero or more characters
+	----->    Represents special characters
+?	----->	  Match exactly one character
+
+$ cat linux.txt | grep ^a
+
+
+############################ Cron job format #############################################
+ 
+ <minute> <hour> <day> <month> <weekday> <command>
+
+  0 16 * * 0 <command>
+  
+$ echo "shutdown now" | at -m 18:00
+
+at command is used to schedule a task only once at the specified time.
+
+##################################### User Information ##################################
+
+/etc/passwd  -----> user information is stored in /etc/passwd
+
+/etc/shadow  -----> Each entry in /etc/shadow contains the user's login
+
+/etc/group   -----> Group information is stored in /etc/group
+
+################################### Uname ##############################################
+
+Use the -a (all) option to see everything.
+Use the -s (kernel name) option to see the type of kernel.
+Use the -r (kernel release) option to see the kernel release.
+Use the -v (kernel version) option to see the kernel version.
+
+uname -a
+uname -s
+uname -r
+uname -v
+
+#################################### Grep command ######################################
+
+Options Description
+-c : This prints only a count of the lines that match a pattern
+-h : Display the matched lines, but do not display the filenames.
+-i : Ignores, case for matching
+-l : Displays list of a filenames only.
+-n : Display the matched lines and their line numbers.
+-v : This prints out all the lines that do not matches the pattern
+-e exp : Specifies expression with this option. Can use multiple times.
+-f file : Takes patterns from file, one per line.
+-E : Treats pattern as an extended regular expression (ERE)
+-w : Match whole word
+-o : Print only the matched parts of a matching line,
+ with each such part on a separate output line.
+
+-A n : Prints searched line and nlines after the result.
+-B n : Prints searched line and n line before the result.
+-C n : Prints searched line and n lines after before the result.
+
+$ grep -w "unix" geekfile.txt
+$ grep -o "unix" geekfile.txt
+
+################################## Find command #########################################
+
+-exec CMD: The file being searched which meets the above criteria and returns 0 for as its exit status for successful command execution.
+-ok CMD : It works same as -exec except the user is prompted first.
+-inum N : Search for files with inode number ‘N’.
+-links N : Search for files with ‘N’ links.
+-name demo : Search for files that are specified by ‘demo’.
+-newer file : Search for files that were modified/created after ‘file’.
+-perm octal : Search for the file if permission is ‘octal’.
+-print : Display the path name of the files found by using the rest of the criteria.
+-empty : Search for empty files and directories.
+-size +N/-N : Search for files of ‘N’ blocks; ‘N’ followed by ‘c’can be used to measure size in characters; ‘+N’ means size > ‘N’ blocks and ‘-N’ means size < 'N' blocks.
+-user name : Search for files owned by user name or ID ‘name’.
+\(expr \) : True if ‘expr’ is true; used for grouping criteria combined with OR or AND.
+! expr : True if ‘expr’ is false.
+
+
+$ find ./GFG -name *.txt									----> Find file
+$ find ./GFG -name sample.txt -exec rm -i {} \;     		----> find and delete file.
+$ find ./ -type f -name "*.txt" -exec grep 'Geek'  {} \;	----> Find text within multiple files  
+
+################################## AWK Command #########################################
+Built In Variables In Awk
+
+Awk’s built-in variables include the field variables—$1, $2, $3, and so on ($0 is the entire line) — that break a line of text into individual words or pieces called fields. 
+
+1. NR: NR command keeps a current count of the number of input records. Remember that records are usually lines. Awk command performs the pattern/action statements once for each record in a file. 
+
+2. NF: NF command keeps a count of the number of fields within the current input record. 
+
+3. FS: FS command contains the field separator character which is used to divide fields on the input line. The default is “white space”, meaning space and tab characters. FS can be reassigned to another character (typically in BEGIN) to change the field separator. 
+
+4. RS: RS command stores the current record separator character. Since, by default, an input line is the input record, the default record separator character is a newline. 
+
+5. OFS: OFS command stores the output field separator, which separates the fields when Awk prints them. The default is a blank space. Whenever print has several parameters separated with commas, it will print the value of OFS in between each parameter. 
+
+6. ORS: ORS command stores the output record separator, which separates the output lines when Awk prints them. The default is a newline character. print automatically outputs the contents of ORS at the end of whatever it is given to print.
+
+$ awk '{print}' employee.txt												----> print files
+$ awk '/manager/ {print}' employee.txt 										----> Print the lines which matches
+$ awk '{print $1,$4}' employee.txt 											----> Print 1st and 4th column
+$ awk '{print NR,$0}' employee.txt 											----> Print Line Number	
+$ awk '{print $1,$NF}' employee.txt 										----> Print first and last field
+$ awk 'NR==3, NR==6 {print NR,$0}' employee.txt 							----> Print Line From 3 to 6
+$ awk '{print NR "- " $1 }' geeksforgeeks.txt								----> Print records with serial number and "-"
+$ awk '{ if (length($0) > max) max = length($0) } END { print max }' geeksforgeeks.txt -----> find the length of the longest line
+$ awk 'END { print NR }' geeksforgeeks.txt									---->  To count the lines in a file: 
+
+################################## Kernel  #############################################
+
+The Linux® kernel is the main component of a Linux operating system (OS) and is the core interface between a computer’s hardware and its processes.
+
+The kernel has 4 jobs:
+
+1. Memory management: Keep track of how much memory is used to store what, and where
+2. Process management: Determine which processes can use the central processing unit (CPU), when, and for how long
+3. Device drivers: Act as mediator/interpreter between the hardware and processes
+4. System calls and security: Receive requests for service from the processes
+
+################################# Basic component of linux ##############################
+
+What is Linux and also explain the basic components of Linux?
+
+Answer: Linux is the most commonly used operating system that is open source and free. For any computer, the operating system acts as the backbone, and it is most important software that is required for any computer. From network routers, television, video games console, smartwatches, smartphones, desktops, laptops to any other electronic device, Linux is everywhere.
+
+Linux operating system is consist of 3 components which are as below:
+
+1. Kernel: Linux is a monolithic kernel that is free and open source software that is responsible for managing hardware resources for the users.
+2. System Library: System Library plays a vital role because application programs access Kernels feature using system library.
+3. System Utility: System Utility performs specific and individual level tasks.
+
+################################## Boot Process #########################################
+
+1. BIOS
+
+BIOS stands for Basic Input/Output System
+Performs some system integrity checks
+Searches, loads, and executes the boot loader program.
+It looks for boot loader in floppy, cd-rom, or hard drive. You can press a key (typically F12 of F2, but it depends on your system) during the BIOS startup to change the boot sequence.
+Once the boot loader program is detected and loaded into the memory, BIOS gives the control to it.
+So, in simple terms BIOS loads and executes the MBR boot loader.
+
+2. MBR
+
+MBR stands for Master Boot Record.
+It is located in the 1st sector of the bootable disk. Typically /dev/hda, or /dev/sda
+MBR is less than 512 bytes in size. This has three components 1) primary boot loader info in 1st 446 bytes 2) partition table info in next 64 bytes 3) mbr validation check in last 2 bytes.
+It contains information about GRUB (or LILO in old systems).
+So, in simple terms MBR loads and executes the GRUB boot loader.
+
+3. GRUB
+
+GRUB stands for Grand Unified Bootloader.
+If you have multiple kernel images installed on your system, you can choose which one to be executed.
+GRUB displays a splash screen, waits for few seconds, if you don’t enter anything, it loads the default kernel image as specified in the grub configuration file.
+GRUB has the knowledge of the filesystem (the older Linux loader LILO didn’t understand filesystem).
+Grub configuration file is /boot/grub/grub.conf (/etc/grub.conf is a link to this). The following is sample grub.conf of CentOS.
+#boot=/dev/sda
+default=0
+timeout=5
+splashimage=(hd0,0)/boot/grub/splash.xpm.gz
+hiddenmenu
+title CentOS (2.6.18-194.el5PAE)
+          root (hd0,0)
+          kernel /boot/vmlinuz-2.6.18-194.el5PAE ro root=LABEL=/
+          initrd /boot/initrd-2.6.18-194.el5PAE.img
+As you notice from the above info, it contains kernel and initrd image.
+So, in simple terms GRUB just loads and executes Kernel and initrd images.
+
+4. Kernel
+Mounts the root file system as specified in the “root=” in grub.conf
+Kernel executes the /sbin/init program
+Since init was the 1st program to be executed by Linux Kernel, it has the process id (PID) of 1. Do a ‘ps -ef | grep init’ and check the pid.
+initrd stands for Initial RAM Disk.
+initrd is used by kernel as temporary root file system until kernel is booted and the real root file system is mounted. It also contains necessary drivers compiled inside, which helps it to access the hard drive partitions, and other hardware.
+
+5. Init
+
+Looks at the /etc/inittab file to decide the Linux run level.
+Following are the available run levels
+0 – halt
+1 – Single user mode
+2 – Multiuser, without NFS
+3 – Full multiuser mode
+4 – unused
+5 – X11
+6 – reboot
+Init identifies the default initlevel from /etc/inittab and uses that to load all appropriate program.
+Execute ‘grep initdefault /etc/inittab’ on your system to identify the default run level
+If you want to get into trouble, you can set the default run level to 0 or 6. Since you know what 0 and 6 means, probably you might not do that.
+Typically you would set the default run level to either 3 or 5.
+
+6. Runlevel programs
+
+When the Linux system is booting up, you might see various services getting started. For example, it might say “starting sendmail …. OK”. Those are the runlevel programs, executed from the run level directory as defined by your run level.
+Depending on your default init level setting, the system will execute the programs from one of the following directories.
+Run level 0 – /etc/rc.d/rc0.d/
+Run level 1 – /etc/rc.d/rc1.d/
+Run level 2 – /etc/rc.d/rc2.d/
+Run level 3 – /etc/rc.d/rc3.d/
+Run level 4 – /etc/rc.d/rc4.d/
+Run level 5 – /etc/rc.d/rc5.d/
+Run level 6 – /etc/rc.d/rc6.d/
+Please note that there are also symbolic links available for these directory under /etc directly. So, /etc/rc0.d is linked to /etc/rc.d/rc0.d.
+Under the /etc/rc.d/rc*.d/ directories, you would see programs that start with S and K.
+Programs starts with S are used during startup. S for startup.
+Programs starts with K are used during shutdown. K for kill.
+There are numbers right next to S and K in the program names. Those are the sequence number in which the programs should be started or killed.
+For example, S12syslog is to start the syslog deamon, which has the sequence number of 12. S80sendmail is to start the sendmail daemon, which has the sequence number of 80. So, syslog program will be started before sendmail.
+
+
+################################## RUN LEVEL ############################################
+There are 7 run level,
+
+Run Level			Mode								Action
+0					Halt								Shuts down system
+1					Single-User Mode					Does not configure network interfaces, start daemons, or allow non-root logins
+2					Multi-User Mode						Does not configure network interfaces or start daemons.
+3					Multi-User Mode with Networking		Starts the system normally.
+4					Undefined							Not used/User-definable
+5					X11									Multiple user mode with networking under GUI 
+6					Reboot								Reboots the system
+
+
+################################## Linux Command ########################################
+
+$ alias home='cd /home/tecmint/public_html'
+
+# find . -type f -name *ones*
+
+w command lists the currently logged in users.
+
+
+
+#!/bin/bash
+for (( i=1; i<=100; i++ ))
+ do
+   if (( $i % 3 == 0 ))
+   then
+     echo "Tom"
+	elif (( $i % 5 == 0 ))
+	then
+	  echo "Cat"
+	elif (( $i % 3 == 0 && $i % 5 == 0 ))
+	then
+	 echo "Tom Cat"
+	else:
+	 echo "Number is not divisable"
+  fi
+done
+  
+
+
+
+
+
