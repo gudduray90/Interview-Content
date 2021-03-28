@@ -1,0 +1,290 @@
+aws :-
+
+load balancer :-
+   network --
+      TCP/UDP/ICMP
+   application
+      HTTP/HTTPS
+   classic 
+
+Auto scaling:-
+   scale in --> instance remove less then decide threshold 
+   scale out --> instance added  above then decide threshold
+
+SNS(simple notification service) :-
+  
+Horizontal scaling --> instance addition
+Vertical scaling  --> system resource addition 
+
+Global services :-
+S3
+Route 53
+IAM
+
+VPC :-
+Peering type -->
+  1 -cross region peering
+  2- cross account peering
+  3- between two different network
+  
+  By default VPC in one region ---> 5
+  By default route table in VPC ---> 200
+  By default entries in one route table --> 50
+  
+ Default service create with VPC creation:-
+1- route table
+2- dhcp 
+3- NACL
+  
+ Need to create tasks to create VPC :-
+1- VPC create
+2- Subnet 
+3- Route table
+4- internet gateway
+
+Nat gateway :-  need to connect private subnet instance with public network  --> Public subnet --> elastic IP
+Internet gateway:- instance connect with public network  -->
+
+Diff NACL & route Table:-
+NACL --> apply on subnet, stateless
+               
+Route table --> apply on instance, stateful
+
+Storage :-
+s3-
+  S3- standard
+  s3- Standard-IA  
+  S3- standard-Glacier
+  s3- standard-Glacier-deep
+EFS- just like NFS, we can attach this volume with multiple instances
+EBS- we can attached with only one instance at a time
+
+Cloud Front -->  For web content sever with low latency 
+      Deploy on edge locations 
+      By default relation period 24 cache/ 365 days configure             
+    
+  IAM -
+    role - we create roles on aws services 
+                policy - we create policy to assign aws users
+
+ Load balancer--> we create autoscaling and select to ELB /EC2   
+
+ ECR  --> elastic container registry 
+ 
+ 
+Five ips by default occupied in subnet:-
+1- network ip
+2- dhcp
+3- dns
+4- reserved for future purpose
+5- broadcast ip
+
+ 
+ 
+#####################################################################################
+
+ansible:-
+
+#ansible           --> default module ----> command 
+#ansible-playbook ---> default module ----> setup
+
+playbook  --> written in yml and contains set of tasks and instructions
+play      --> 
+block     --> group of task for a process
+tasks     --> single set of execution
+
+ansible --> push based mechanism
+
+why we use adhoc command --> for independently execution task, quick output
+
+---
+- hosts: all
+  become: yes
+  
+  tasks:
+    - name: redis install
+      yum: pkg=redis state=present
+      notify: start redis
+  handler:               
+    - name: start redis
+      service: name=redis-server state=started enabled=yes
+...
+
+
+#######################
+
+-b --> become to give privilege of sudo
+
+#ansible-playbook -i /opt/myint  myplaybook myhost
+
+handler --> it  trigger when notify by another task
+
+modules :-
+1- shell
+2- command
+3- yum
+4- service
+5- template
+6- copy
+7- script
+8- lineinfile
+
+ansible vault --> we can encrypt sensitive data and so playbook.
+#ansible-vault create xyz.yml
+#anisble-vault encrypt apb.yml
+#anisble-vault decrypt apb.yml
+
+#ansible-playbook -i /opt/myint  myplaybook myhost --ask-pass
+#ansible-playbook -i /opt/myint  myplaybook myhost --ask-pass-file
+
+
+ansible role:-
+  organize way to reuse playbooks
+  master.yml
+  roles
+
+#ansile-role create webserver
+
+webserver == main.yml
+default 
+vars
+handler
+templet
+meta
+
+#################################################################
+Docker:-
+
+1- follow containerization mechanism
+2- isolation of process
+3- resource utilization
+
+#docker --version
+#docker info ---> 19.01
+
+#docker ps -a 
+#docker rm $(docker ps -qa)
+
+volumes in docker :-
+1- volumes   --> docker volume create myvolume
+2- bind mount  --> docker run -d --name myredis -v /opt:/data/ redis
+3- tmfs   --> save data in RAM not in hosts filesystem
+
+Networks in docker:-
+1- bridge(default)
+2- none
+3- host
+4- ipvlan
+5- macvlan
+6- overlay  --> clustering 
+
+default ip range of docker --> 172.17.0.0/24
+
+#docker network create --subnet 172.25.0.0/24 --gateway 172.25.0.1 mynetwork
+#docker network inspect mynetwork
+
+#docker run -d --name mydocker -v /opt/html:/usr/share/nginx/html -p 80:80 --network mynetwork 
+
+#docker network connect host
+#docker network disconnect host
+
+
+storage driver :-
+1-overlay
+2-ZFS
+3-AUFS
+4-device mapper
+
+#####################################################################
+docker swarm:-
+docker trust
+docker secret 
+
+Dockerfile:- it is simple text file to create customize image
+
+Instructions :-
+FROM
+COPY  --> copy file or folder at it is.
+ADD   --> ADD have functionality to copy file with extraction tar file
+RUN
+ENTERYPOINT  --> use in start of container, it can't override 
+CMD          --> use in start of container, cmd override default command
+ENV
+LABEL
+USER
+
+FROM Centos:7
+RUN yum install -y epel-release && yum install -y nginx
+COPY /opt/index.html /usr/share/nginx/html/
+CMD ["nginx","-g","daemon off;"]
+
+
+#docker build -t myimage .
+
+#docker commit containerid imagename --> create image from container
+
+diff :-
+docker save  --> tack backup of docker image in tar file
+docker load  --> create docker image from backup file
+
+###########
+docker compose :-
+to run multiple container we use docker compose file
+
+version: "3"
+services:
+    db:
+     - redis
+     ports:
+     - 80:80
+     volume:
+     - v /opt:/data
+                
+    nginx:
+
+
+#docker-compose up -d
+#docker-compose down
+
+#docker service create mynignx --replics:3 nginx
+
+#############################################################################
+Jenkins:-
+  1- its is open source
+  2- thousand of plugins are available
+  3- we have community available
+  4- it help us to achive end to end CI and CD
+
+1- scripted pipeline   --> syntax start from node / we have to create in jobs only
+
+2- declrative pipeline  --> syntax start form pipeline / we can user from remote 
+
+git --> to pull code
+mnv --> to build create
+jococo --> test report create
+sonarqube --> SonarQube (formerly Sonar) is an open-source platform developed by SonarSource for continuous inspection of code quality to perform automatic reviews with static analysis of code to detect bugs, code smells, and security vulnerabilities on 20+ programming languages. 
+    - code smell  ------ > We check Duplicate Code, Lazy Class, Data Class, Dead Code etc 
+    - security check (vernablities)
+    - duplication
+    - code coverage            
+
+nexeus  --> for artifacts
+
+
+#mvn clean install package deploy upload 
+
+
+mvn sonar:sonar (sonaqube)
+mvn spring-boot:run
+
+
+mvn clean install: directory/target/file.jar
+
+Steps of pipline :-
+  1- git clone
+  2- mvn build 
+  3- sonarqube qualit check 
+  4- nexus artifacts
+  5- deploy
+  
+#################################################################
