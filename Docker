@@ -1,0 +1,527 @@
+
+container orchestration ------> Container orchestration is all about managing the lifecycles of containers.
+
+docker image ls --- Check list of images
+
+docker container ps ---- check list of container
+
+watch docker container ps ------ see what is happning with container (OLD WAY)
+
+docker container ls -a  ---- check list of unused (Not running) container
+
+docker container run -itd ubuntu sleep 30 ---- create a container for only 30 seconds. 
+
+docker container run ubuntu cat /etc/os-release--------- When container will create cat /etc/os-release command will execute
+
+docker container run -itd ubuntu ubuntu:latest ----- create container in backgroud 
+
+docker container run -it ubuntu ubuntu:latest /bin/bash ----- create a container with tty shell
+
+docker container rm f737ce541793 ----- remove container
+
+docker container start container_id ----- start container
+
+docker container stop container_id ------ stop container
+
+press ctrl+p+q -- you will be exit from container and container will be in running mode.
+
+docker container ls -aq ---- Check all running container's ID
+
+docker container rm $(docker container ls -aq) ---- delete all running container's 
+
+docker container rm -f $(docker container ls -aq) ---- delete all running container's 
+
+docker container inspect container_id --- check all details of container
+
+docker container logs container_id ----- check logs of container
+
+docker container top container_id ----- Check all running process of container
+
+docker container stats --- it will show all running process from multiple container 
+
+docker container run -d -p 80:80 --name web-server nginx --- create a nginx container with port 80 (port mapping)
+
+docker container exec -it container_id /bin/bash  ---- take access of nginx console
+
+docker container rename container_id web_server ------ rename container 
+
+docker container kill container_id ---- This command will kill the container
+
+docker container wait container_id ---- This command will show exit status of container when it will be closed
+
+docker container diff container_id ---- it will show file status in this container like- add, delete, copy etc.
+
+docker container restart container_id  ------ Restart the container
+
+docker container attach container_id ----- Take shell access of running container
+
+docker container pause container_id  ------------ Pause container
+
+docker container unpause container_id  ---------- unpause container
+
+docker container port container_id --- check which port is mapped with local host
+
+docker container cp test 39:/tmp/ ----- copy file/directory in container
+
+docker container export container_id > my_ubuntu_app_server.tar -----Export tar file of container
+
+docker container export container_id -o my_ubuntu_app_server_1.tar -----Export tar file of container
+
+docker image import my_ubuntu_app_server_1.tar my_ubuntu_app_server ----------Import tar file of container
+
+docker container run -itd my_ubuntu_app_server /bin/bash --- Create container using import tar file image.
+
+docker container commit --author "Guddu Kumar Ray" -m "This is my test commit" container_id my_new_app_server --- create image from running container
+
+docker image tag ubuntu guddukrishna89/ubuntu_app_server
+
+docker login
+
+user_name---guddukrishna89
+password---Krishna@123
+
+docker push guddukrishna89/ubuntu_app_server
+
+docker pull guddukrishna89/ubuntu_app_server
+
+docker image ls --format '{{.ID}}, {{.Repository}}, {{.Tag}}' --- print in custom format
+
+docker image rm -f image_name ------- remove image
+
+docker image rmi image_name ----- remove image
+
+docker image history nginx ------ check image history
+
+docker image prune---- Delete all images
+
+docker image save > my_new_image.tar
+
+docker image load < my_new_image.tar
+
+Add command------- This command will not copy tar file, it will extract that tar file and copy.
+
+Copy command------ If you are coping *.tar file then it will copy *.tar file means it will copy the same file or folder.
+
+######################################### Dockerfile ################################################
+
+FROM ubuntu:16.04
+RUN apt-get update && apt-get install tree -y
+RUN touch /tmp/abc1.txt
+RUN touch /tmp/abc2.txt
+LABEL name="Guddu"
+LABEL email="guddukrishna89@gmail.com"
+ENV name guddu
+ENV pass krishna@123
+RUN pwd > /tmp/pwd1.txt
+RUN cd /tmp/
+RUN pwd > /tmp/pwd2.txt
+WORKDIR /tmp
+RUN pwd > /tmp/pwd3.txt
+RUN apt-get install openssh-server -y && apt-get install python -y
+RUN useradd -d /home/guddu -g root -G sudo -m -p $(echo "$pass" | openssl passwd -1 -stdin) $name
+RUN whoami > /tmp/whoami1.txt
+USER $name
+RUN whoami > /tmp/whoami2.txt
+COPY testproject /tmp/testproject/
+RUN mkdir -p /tmp/testproject1/
+ADD testproject1.tar /tmp/testproject1/
+CMD ["python"]
+EXPOSE 22 80
+CMD ["/usr/sbin/sshd","-D"]
+ENTRYPOINT [ "tree" ]
+CMD [ "--version" ]
+COPY test1.sh /tmp/
+ENTRYPOINT [ "/tmp/test1.sh" ]
+
+
+CMD sets default command and/or parameters, which can be overwritten from command line when docker container runs.
+
+ENTRYPOINT command and parameters will not be overwritten from command line. Instead, all command line arguments will be added after ENTRYPOINT parameters.
+
+docker image build -t app_ubuntu .
+
+
+--link :--- The --link flag is a legacy feature of Docker. It may eventually be removed. Unless you absolutely need to continue using it, we recommend that you use user-defined networks to facilitate communication between two containers instead of using --link. One feature that user-defined networks do not support that you can do with --link is sharing environment variables between containers. 
+
+docker container run -d --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=true mysql
+
+docker container inspect container_id
+
+docker container exec -it container_id bash
+
+docker container rm -f container_id
+
+docker container run -it -v 4cbbbe7b0cd58931fa3ddb2fe17e21445d54d6a3abeeb5bad3eda6cb937828ba:/var/lib/mysql mysql
+
+docker network ls -------- check list of network
+
+docker network create test(Network Name) ---- create network
+
+docker network rm test ----- delete network
+
+docker network inspect ---- describe network
+
+docker container run -itd --network=test ubuntu:16.04 /bin/bash
+
+docker network prune ---- delete unused network
+
+docker network rm network_id --- remove network
+
+docker network connect test 02d94919ed49 --- connect multiple network in a container
+
+docker network disconnect test 02d94919ed49 ---- disconnect network
+
+We can not connect none network if we have already connect other network.
+
+docker image pull registry ----- pull registry image
+
+docker container run -d -p 5000:5000 --name simple_registry registr --- create local registry
+
+docker image tag redis:latest 127.0.0.1:5000/redist:latest  ----- This is insecure registry
+
+docker image tag rabbitmq:latest 172.17.0.48:5000/rabbitmq ---secure registry
+
+Using default tag: latest
+Error response from daemon: Get https://172.17.0.48:5000/v2/: http: server gave HTTP response to HTTPS client
+
+then create below file at /etc/docker/ location
+
+vim daemon.json
+{
+        "insecure-registries" : ["172.17.0.48:5000"]
+}
+
+then restart docker
+
+
+then push your image in secure registry
+
+docker push 172.17.0.48:5000/rabbitmq ---- push image on secure registry
+
+
+Create secure registery----
+
+cd /etc/docker/
+rm -rf daemon.json
+
+Now stop registery container---
+
+docker container stop container_id
+
+restart docker service (service docker restart)
+
+mkdir certs
+
+openssl req -newkey rsa:4096 -nodes -sha256 -keyour certs/domain.key -x509 -days 365 -out certs/domain.crt
+
+cd /etc/docker/
+
+mkdir certs.d
+
+mkdir repo.docker.local:5050
+
+cp certs/domain.crt /etc/docker/certs.d/repo.docker.local\:5000/ca.crt
+
+service docker restart
+
+docker container run -d -p 5000:5000 --name secure_registry -v $(pwd)/certs/:/certs -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key registry
+
+add system_ip repo.docker.local in /etc/hosts file
+
+docker image tag mariadb repo.docker.local:5000/mariadb
+
+docker image push repo.docker.local:5000/mariadb
+
+
+
+############################################# Docker Compose ##########################################
+
+
+vim docker-compose.yml
+
+version: '3'
+services:
+  webapp1:
+     image: redis
+	 ports:
+	   - "6379:80"
+
+docker-compose up -d
+
+docker-compose down 
+
+docker-compose -f docker-conpose-file.yml up -d
+
+vim docker-compose.yml
+
+version: '3'
+services:
+   webapp1:
+      image: nginx
+	  ports:
+	    - "8000:80"
+	webapp2:
+	   image: nginx
+	   ports:
+	     - "8001:80"
+
+docker-compose -f docker-compose.yml up -d
+
+docker-compose create --- it will create container, not will start. It will not create network
+
+docker-compose rm --- remove container
+
+docker-compose up --no-start --- it will create container and network
+
+docker-compose  start ---- start all stopped container
+
+docker-compose stop --- stop running container
+
+docker-compose rm  ----- delete container and it will not delete network.
+
+docker-compose ps --- show list of container
+
+docker-compose pause --- pause container
+
+docker-compose unpause   --- unpause container
+
+docker-compose kill  ----- kill running container
+
+docke-compose port webapp1 80 ----- it will show that which system port is mapped with container port 80.
+
+docker-compose logs -f ---- it will show container logs
+
+docker-compose exec webapp1 ls ---- this will run ls command in running container
+
+docker-compose run webapp1 ls --- this will run ls command in new container and kill this container after commant run.
+
+docker-compose restart ---- this will restart containers
+
+docker-compose version --- this will show docker-compose version
+
+vim docker-compose.yml
+
+version: '3'
+services:
+   webapp1:
+     image: nginx
+   webapp2:
+     image: nginx
+	 
+docker-compose up -d
+
+docker-compose scale webapp1=4 webapp2=2 ---- this will inrease webapp1 container list and webapp2 container list
+
+docker-compose ps ----- this will show running container list.
+
+docker-compose top ---- this will show running process of containers.
+
+
+
+
+
+What is ARG ?
+
+ARG instruction defines a variable that can be used to build a Docker image.
+ARG values are not available after the image is built.
+In the running container you can’t access the ARG variables.
+Once ARG variable is defined in the Dockerfile, you can always override the values by passing command line argument as shown below
+If you need to pass two variables using CMD line then you need to use --build-arg two times
+
+--------docker build -t test --build-arg VARIABLE_1=7 --build-arg VAR_2=8 .
+
+Example of using ARG argument in the Dockerfile
+FROM alpine:3.7
+ARG VARIABLE_1=5
+RUN echo $VARIABLE_1
+Run the Dockerfile
+docker build .
+
+Run the Dockerfile by passing arguments
+
+docker build --build-arg VARIABLE_1=7 .
+
+What is ENV?
+
+ENV is to provide default values for your future environment variables inside the container
+We can’t change the ENV variable using command line argument directly
+If we need to change the ENV variable using CMD line then we have to use ARG and place ARG variable in ENV variable
+In the below Dockerfile, we have created two variables , one as ARG and one as ENV
+Using ARG Value in ENV Variable
+
+FROM alpine:3.7
+ARG VARIABLE_1=5
+ENV VARIABLE_2=$VARIABLE_1
+RUN echo "print variable value:" $VARIABLE_1
+RUN echo " print ENV variable : " $VARIABLE_2
+
+
+Build image by using ENV variable as CMD line argument
+Build will fail and you will see the error “[Warning] One or more build-args [VARIABLE_2] were not consumed
+
+docker build -t test --build-arg VARIABLE_2=7 .
+
+[Warning] One or more build-args [VARIABLE_2] were not consumed
+
+Run the container using this image
+
+We are using -it for the interactive terminal session
+We will try to echo the variables which we were using in our Dockerfile
+As mentioned already, ARG argument is not available inside the Docker containers and ENV argument is accessible inside the container
+
+$ docker run -it test
+/ # echo $VARIABLE_1
+/ # echo $VARIABLE_2
+5
+
+How to pass parameters to docker-compose file
+In docker-compose file you use the mariadb and don’t want to hardcode the version directly in the file
+Below is the sample code how you use the variable MARIADB_VERSION
+version: '2'
+services:
+  mariadb:
+    image: 'bitnami/mariadb:${MARIADB_VERSION}'
+
+##################################### Docker storage driver #####################
+
+Docker supports several different storage drivers, using a pluggable architecture. The storage driver controls how images and containers are stored and managed on your Docker host
+
+Docker supports the following storage drivers:
+
+1. overlay2 is the preferred storage driver, for all currently supported Linux distributions, and requires no extra configuration.
+
+2. aufs was the preferred storage driver for Docker 18.06 and older, when running on Ubuntu 14.04 on kernel 3.13 which had no support for overlay2.
+
+3. fuse-overlayfs is preferred only for running Rootless Docker on a host that does not provide support for rootless overlay2. On Ubuntu and Debian 10, the fuse-overlayfs driver does not need to be used overlay2 works even in rootless mode. 
+
+4. devicemapper is supported, but requires direct-lvm for production environments, because loopback-lvm, while zero-configuration, has very poor performance. devicemapper was the recommended storage driver for CentOS and RHEL, as their kernel version did not support overlay2. However, current versions of CentOS and RHEL now have support for overlay2, which is now the recommended driver.
+
+5. The btrfs and zfs storage drivers are used if they are the backing filesystem (the filesystem of the host on which Docker is installed). These filesystems allow for advanced options, such as creating “snapshots”, but require more maintenance and setup. Each of these relies on the backing filesystem being configured correctly.
+
+6. The vfs storage driver is intended for testing purposes, and for situations where no copy-on-write filesystem can be used. Performance of this storage driver is poor, and is not generally recommended for production use.
+
+#dockerd --storage-driver=devicemapper  
+
+#docker info  
+
+######################## driver  Filesystem ########################################
+
+Path: --- > /var/lib/docker/
+
+overlay2 ,overlay ----->  	xfs with ftype=1, ext4
+fuse-overlayfs ------>		any filesystem
+aufs ---->					xfs, ext4
+devicemapper ----->			direct-lvm
+btrfs ----->				btrfs
+zfs	---->					zfs
+vfs	---->					any filesystem
+
+
+############################# Network drivers #######################################
+
+Network drivers
+
+Docker’s networking subsystem is pluggable, using drivers. Several drivers exist by default, and provide core networking functionality:
+
+1. bridge: The default network driver. If you don’t specify a driver, this is the type of network you are creating. Bridge networks are usually used when your applications run in standalone containers that need to communicate. 
+
+2. host: For standalone containers, remove network isolation between the container and the Docker host, and use the host’s networking directly.
+
+3. overlay: Overlay networks connect multiple Docker daemons together and enable swarm services to communicate with each other. You can also use overlay networks to facilitate communication between a swarm service and a standalone container, or between two standalone containers on different Docker daemons. This strategy removes the need to do OS-level routing between these containers. 
+
+4. macvlan: Macvlan networks allow you to assign a MAC address to a container, making it appear as a physical device on your network. The Docker daemon routes traffic to containers by their MAC addresses. Using the macvlan driver is sometimes the best choice when dealing with legacy applications that expect to be directly connected to the physical network, rather than routed through the Docker host’s network stack. 
+
+5. none: For this container, disable all networking. Usually used in conjunction with a custom network driver. none is not available for swarm services. 
+
+6. Network plugins: You can install and use third-party network plugins with Docker. These plugins are available from Docker Hub or from third-party vendors. See the vendor’s documentation for installing and using a given network plugin.
+
+Network driver summary
+
+1. User-defined bridge networks are best when you need multiple containers to communicate on the same Docker host.
+2. Host networks are best when the network stack should not be isolated from the Docker host, but you want other aspects of the container to be isolated.
+3. Overlay networks are best when you need containers running on different Docker hosts to communicate, or when multiple applications work together using swarm services.
+4. Macvlan networks are best when you are migrating from a VM setup or need your containers to look like physical hosts on your network, each with a unique MAC address.
+5. Third-party network plugins allow you to integrate Docker with specialized network stacks.
+
+########################################################################################
+
+commit  --- This command is used for create image fro running container
+destroy 
+die
+exec_create
+exec_detach
+exec_die
+exec_start
+health_status
+oom
+resize
+update
+
+
+Docker images report the following events:
+
+delete
+import
+load
+pull
+push
+save
+tag
+untag
+PLUGINS
+
+Docker plugins report the following events:
+
+enable
+disable
+install
+remove
+VOLUMES
+
+Docker volumes report the following events:
+
+create
+destroy
+mount
+unmount
+NETWORKS
+Docker networks report the following events:
+
+create
+connect
+destroy
+disconnect
+remove
+DAEMONS
+
+Docker daemons report the following events:
+
+reload
+SERVICES
+
+Docker services report the following events:
+
+create
+remove
+update
+NODES
+
+Docker nodes report the following events:
+
+create
+remove
+update
+SECRETS
+
+Docker secrets report the following events:
+
+create
+remove
+update
+CONFIGS
+
+Docker configs report the following events:
+
+create
+remove
+update
