@@ -1,0 +1,380 @@
+-----Create POD----
+kubectl run firstpod --generator=run-pod/1 --image=nginx
+
+kubectl run firstpod --dry-run --generator=run-pod/1 --image=nginx				(This command will run only client side not on server side.)
+
+-----Attach label ------
+kubectl label pod firstpod env=testing 
+
+kubectl label --overwrite pod firstpod env=pod  		(it will overwrite existing label)
+
+kubectl label pod firstpod status=xyz					(It will add label in all container in that pod)
+
+----- Remove Label ------
+kubectl label pod firstpod env-
+
+-----Show label ---------
+
+kubectl get pods --show-label
+
+------ Delete all pods -------
+
+kubectl delete pods --all
+
+------- Explain pod -----
+kubectl explain pod 
+
+------- Write a yml file for create pod -----------------
+vim firstpod.yml
+
+apiVersion: v1
+kind: POD
+metadata:
+  name: firstpod
+  label:
+     env: prod
+spec:
+   containers:
+      - name: web-server
+	    image: nginx:1.9.0
+		
+		OR create yml through command
+		
+kubectl run secondpod --dry-run --generator=run-pod/1 --image=nginx -o yaml > mysecondpod.yml
+		
+Now execute this firstpod.yml 
+
+kubectl create -f vim firstpod.yml --dry-run       		(Check yml file syntax)
+
+kubectl create -f vim firstpod.yml					--execute
+
+kubectl explain pod --recursive
+
+--------------- Edit pod --------------
+
+kubectl edit pod myfirstpod
+
+kubectl diff -f firstpod.yml 			(Check changes in yml file)
+
+---------- Check pod env variable ---------
+kubectl exec myfirstpod env
+
+------- Sccecc pod container ---------
+kubectl exec myfirstpod -it bash
+
+kubectl exec myfirstpod -c container_name -it bash			(If multiple containers are available)
+
+-------- Create any container for only 30 sec ---------
+we will specify argument in spec section in yml file and then pass argument value like,
+
+args: ["sleep","30"]
+
+---------Multiple container in a pod ---------
+We can create multiple container in a pod and all container will share the same network and they can comunicate with each other on different port.
+
+-------- Init Container in kun=bernetes ------
+Init Containers are containers that run before the main container runs with your containerized application. They normally contain setup scripts that prepares an environment for you containerized application. Init Containers also ensure the wider server environment is ready for your application to start to run.
+
+init containers do not support lifecycle, livenessProbe, readinessProbe, or startupProbe because they must run to completion before the Pod can be ready.
+
+If you specify multiple init containers for a Pod, kubelet runs each init container sequentially. Each init container must succeed before the next can run. When all of the init containers have run to completion, kubelet initializes the application containers for the Pod and runs them as usual.
+
+--------- Cluster IP -------
+ClusterIP is the default kubernetes service. This service is created inside a cluster and can only be accessed by other pods in that cluster. So basically we use this type of service when we want to expose a service to other pods within the same cluster.
+
+kubectl expose pod thirdpor --type=ClusterIp --port=8000 --target-port=80 --name myfirstservice1
+
+-------- NodePort -----------
+A NodePort is an open port on every node of your cluster. Kubernetes transparently routes incoming traffic on the NodePort to your service, even if your application is running on a different node.
+
+kubectl expose pod thirdpor --type=NodePort --port=8000 --target-port=80 --name myfirstservice1
+
+kubectl explain service
+
+vim firstservice.yml
+apiVersion: v1
+kind: Service
+metadata:
+   name: myfirstservice1
+   labels:
+      servicelbl: lablename
+spec:
+   type: NodePort
+   ports:
+     - nodePort: 32000
+	   port: 9000
+	   targetPort: 80
+   selector:
+      type: app
+	  
+kubectl apply -f firstservice.yml
+
+-------- Replication Controller -----------
+It support equality base selector.
+it provide roll out funcanality.
+
+vim firstrc.yml
+
+apiVersion: v1
+kind: ReplicationController
+metadata:
+   name: myfirstrc
+   labels:
+      appname: merchantapp
+spec:
+   replicas: 1
+   template:
+      metadata:
+	    name: firstpod1
+		label: 
+		  type: app
+		spec:
+		  containers:
+		     - image: nginx:1.9.0
+			   name: firstcontainer
+			   
+   type: NodePort
+   ports:
+     - nodePort: 32000
+	   port: 9000
+	   targetPort: 80
+   selector:
+      type: app
+	  
+kubectl apply -f firstrc.yml		---> create rc
+
+kubectl delete -f firstrc.yml		---> delete rc
+
+kubectl delete rc --cascase=false firstreplicationcontroler      (It will delete only rc not all pods of that rc.)
+
+kubectl scale rc --replicas=5 myfirstrc		----> scal your rc
+
+kubectl get rc
+
+kubectl get pods
+
+kubectl edit rc myfirstrc			---> edit your replication controller
+
+-------- Replica Set -------------
+It support equality base and set base selectors.
+It does not provide roll out function.
+
+vim firstrs.yml						--- > equity base selector
+
+apiVersion: app/v1
+kind: ReplicaSet
+metadata:
+   name: myfirstrs
+   labels:
+      appname: merchantapp
+spec:
+   replicas: 1
+   selector:
+      matchLabels:
+	     type: app
+   template:
+      metadata:
+	    name: firstpod1
+		labels: 
+		  type: app
+		spec:
+		  containers:
+		     - image: nginx:1.9.0
+			   name: firstcontainer
+			   
+kubectl apply -f firstrc.yml		---> create rc
+
+kubectl delete -f firstrs.yml
+
+kubectl get rs
+
+vim firstrs.yml				 ---- > set base selector
+
+apiVersion: app/v1
+kind: ReplicaSet
+metadata:
+   name: myfirstrs
+   labels:
+      appname: merchantapp
+spec:
+   replicas: 3
+   selector:
+      matchExpressions:
+	     - key: app
+		   operator: In
+		   values:
+		     - myapp1
+			 - myapp2
+		 - key: type
+		   operator: NotIn
+		   values:
+		     - backend
+   template:
+      metadata:
+	    name: firstpod1
+		labels: 
+		  type: myapp1
+		spec:
+		  containers:
+		     - image: nginx:1.9.0
+			   name: firstcontainer
+			   
+kubectl create -f firstrs.yml
+
+kubectl delete rs firstrs
+
+------- Deplyment -----------
+
+There are two type of strategy in deployment --- 1. RollingUpdate 2. Recreate
+
+vim firstdeployment.yml	
+
+apiVersion: app/v1
+kind: Deployment
+metadata:
+   name: myfirstdeploy
+   labels:
+      appname: merchantapp
+spec:
+   replicas: 3
+   minReadySeconds: 30					--- after how much time pod will be in ready state
+   strategy:
+     rollingUpdate:
+	    maxSurge: 1
+		maxUnavailable: 0
+	 type: RollingUpdate
+   selector:
+      matchExpressions:
+	     - key: app
+		   operator: In
+		   values:
+		     - myapp1
+			 - myapp2
+   template:
+      metadata:
+	    name: firstpod1
+		labels: 
+		  type: myapp1
+		spec:
+		  containers:
+		     - image: nginx:1.9.0
+			   name: firstcontainer
+			   
+kubectl create -f firstdeployment.yml --dry-run			---> check syntax
+
+kubectl create -f firstdeployment.yml 
+
+kubectl rollout history deployment firstdeploy   	---> It will show rollout history
+
+kubectl apply -f firstdeployment.yml --record		---> It will contain this commant in rollout history
+
+kubectl rollout undo deployment firstdeploy			---> It will rollback on just previous version
+
+kubectl rollout undo --help							---> Check rollout command details
+
+kubectl rollout undo deployment firstdeploy --to-revision=2    ---> It will rollback on 2nd version
+
+kubectl rollout pause deployment firstdeploy
+
+kubectl rollout resume deployment firstdeploy
+
+What is the default value of rollout history?
+
+Answer:- Add "revisionHistoryLimit" under "spec" in yaml file.
+Example :
+________________________________________
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-first-deployment
+  labels:
+    app: myapp
+spec:
+    replicas: 5
+    revisionHistoryLimit: 15      <------
+________________________________________
+
+Also the maximum number of revisions in kubernets version "apps/v1" is 10 by default.
+
+Default value of Deployment:---
+MinReadySeconds: 						0
+StrategyType:    						RollingUpdate
+RollingUpdateStrategy:					25% maxSurge and maxUnavailable
+
+-------- Allocate resource of container in kubernetes-----------
+
+vim pod.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+   name: firstpod
+   label: 
+      app: myapp
+	  type: frontend
+spec:
+  containers:
+     - name: Web-server
+	   image: nginx:1.9.0
+	   imagePullPolicy: Never       ---> If internet will not available then it will not send pull request over internet 
+										and it will search internal then deploy the image.
+	   resources:
+	      requests:
+		     memory: 200Mi or 2Gi
+			 cpu: 100m or 0.1     				---> CPU valu will be in milicpu and 1000 milicpu equals to 1 cpu
+		  limits:
+		     memory: 500Mi
+			 
+			 
+kubectl apply -f pod.yml --dry-run
+
+kubectl apply -f pod.yml
+
+Suppose that we ahe 2 container in a pod and we have define 200Mi memory for 1st container and 500Mi memory for 2nd container. Now this pod pod will be schedule on that worker node where memory should be available the sum of 1st+2nd container (1st container memory + 2nd container memory).
+
+
+------------ Namespace -------------------
+kubectl api-resources : grep -i pod			---> check which resources support namespace or not.
+
+kubectl get namespace or ns
+
+kubectl create ns firstnamespace			---> create namespace
+
+kubectl get pods -n firstnamespace			---> Check pod are created in which ns and ns name
+
+kubectl get pods --all-namespace        	---> It will show all ns pods 
+
+kubectl delete pods firstpod -n firstnamespace		---> delete pod fron firstnamespace 
+
+vim pod.yml
+
+apiVersion: v1
+kind: Pod
+metadata:
+   name: firstpod
+   namespace: firstnamespace
+   label: 
+      app: myapp
+	  type: frontend
+spec:
+  containers:
+     - name: Web-server
+	   image: nginx:1.9.0
+	   imagePullPolicy: Never       
+	   resources:
+	      requests:
+		     memory: 200Mi or 2Gi
+			 cpu: 100m or 0.1  
+		  limits:
+		     memory: 500Mi
+			 
+kubectl apply -f pod.yml
+
+
+default Namespace:---> If we are creating any pod,rc,rs deployment and we have not define any namespace then that will be auto assign to default namespace.
+
+kube-public:---> If you wanted that your pods, rc, rs and deployment will be availabe for publicly or will be public facing then you can assign kube-public namespace. Here no need of user authentication.
+
+
+
