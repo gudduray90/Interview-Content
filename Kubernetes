@@ -377,7 +377,104 @@ default Namespace:---> If we are creating any pod,rc,rs deployment and we have n
 kube-public:---> If you wanted that your pods, rc, rs and deployment will be availabe for publicly or will be public facing then you can assign kube-public namespace. Here no need of user authentication.
 
 
+kubectl create ns myns			---> create namespace
 
+kubectl describe ns myns
+
+vim quota.yml
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+   name: myquota
+spec:
+  hard:
+    pods: 2
+	request.cpu: 0.5				---> minimum 0.5 CPU will be used
+	request.memory: 500mi			---> minimum 0.5 memory will be used
+	limits.cpu: 1					---> maximum 0.5 CPU will be used
+	limits.memory: 1Gi				---> maximum 0.5 CPU will be used
+
+kubectl apply -f quota.yml --namespace=myns
+
+kubectl delete -f quota.yml
+
+kubectl get resourcequotas -n myns
+
+when we will set resource quota in namespace then at the time of pod creation we must specifiy pod resorce quota also other wise pod will not create.
+
+Suppose we have define limits but we have not define any request then what will happen, In this scenario lomits value will be request values.
+
+kubectl api-resources | grep -i limits		---> This will grep in system
+
+Limitranges:----> When we create limitranges for any namespace then we do not need to provide resources limit/quota or request at the time of pod creation.
+
+
+vim limitranges.yml
+
+apiVersion: v1
+kind: Limitrange
+metadata:
+   name: testlimitrange
+   namespace: myns
+spec:
+  limits:
+    - default:
+	    cpu: 200m
+		memory: 500Mi
+	  defaultRequest:
+	    cpu: 100m
+		memory: 250Mi
+	  min:
+	    cpu: 80m
+		memory: 250Mi
+	  max:
+	    cpu: 700m
+		memory: 700Mi
+	  type: Container
+kubectl get limits -n myns
+
+kubectl apply -f limitranges.yml
+
+
+vim limitratio.yml
+
+apiVersion: v1
+kind: Limitrange
+metadata:
+   name: testlimitrange
+   namespace: myns
+spec:
+  limits:
+    - maxLimitRequestRatio:
+	    memory: 2
+	  type: Container
+	  
+kubectl apply -f limitratio.yml
+
+kubectl describe ns myns
+
+maxLimitRequestRatio:----> Meaning of maxLimitRequestRatio is that MAX limit /(devided) request and value should be 2 or less than 2 then you can create pod otherwise you will get error.
+
+Limits can be applied to multiple resources apart from Container
+
+1. Container
+2. Pod
+3. Image
+4. ImageStream
+5. PersistentVolumeClaim (pvc)
+
+---------------- ConfigMaps -------------
+
+kubectl api-resources | grep -i configmaps
+
+kubectl get cm
+
+kubectl create cm cm1 --from-literal=database_ip="192.168.0.1" 	--from-literal=database_username="abc"		---> Create configmaps
+
+kubectl describe cm cm1
+
+kubectl get cm
 
 
 ################################### Replication controller ##############################################
