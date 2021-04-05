@@ -24,7 +24,7 @@ kubectl delete pods --all
 ------- Explain pod -----
 kubectl explain pod 
 
-------- Write a yml file for create pod -----------------
+------- Write a yml file for creating a pod -----------------
 vim firstpod.yml
 
 apiVersion: v1
@@ -40,13 +40,13 @@ spec:
 		
 		OR create yml through command
 		
-kubectl run secondpod --dry-run --generator=run-pod/1 --image=nginx -o yaml > mysecondpod.yml
+kubectl run secondpod --dry-run --generator=run-pod/1 --image=nginx -o yaml > mysecondpod.yml  ----> generate a yml syntax for pod creation
 		
 Now execute this firstpod.yml 
 
-kubectl create -f vim firstpod.yml --dry-run       		(Check yml file syntax)
+kubectl create -f firstpod.yml --dry-run       		(Check yml file syntax)
 
-kubectl create -f vim firstpod.yml					--execute
+kubectl create -f firstpod.yml					--create a pod
 
 kubectl explain pod --recursive
 
@@ -377,4 +377,18 @@ default Namespace:---> If we are creating any pod,rc,rs deployment and we have n
 kube-public:---> If you wanted that your pods, rc, rs and deployment will be availabe for publicly or will be public facing then you can assign kube-public namespace. Here no need of user authentication.
 
 
+
+
+
+################################### Replication controller ##############################################
+
+A Replication Controller is a structure that enables you to easily create multiple pods, then make sure that that number of pods always exists. If a pod does crash, the Replication Controller replaces it.  A
+
+
+
+################# Difference between Replication controller and replica set #############################
+
+1. The replica set are also known as next generation replication controller. The only difference between replica set and replication controller is the selector types. The replication controller supports equality based selectors whereas the replica set supports equality based as well as set based selectors.
+
+2. replication controller support rolling update feature but replicat set does not support rolling update.
 
