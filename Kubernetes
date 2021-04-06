@@ -376,6 +376,19 @@ default Namespace:---> If we are creating any pod,rc,rs deployment and we have n
 
 kube-public:---> If you wanted that your pods, rc, rs and deployment will be availabe for publicly or will be public facing then you can assign kube-public namespace. Here no need of user authentication.
 
+kube-system:- In this namespace all system required namespace will be created by system. like APIServer, Scheduler etc.
+
+kubectl config set-context --currect --namespace=testing		---> This command will set a default namespace of test namespace.
+
+kubectl exec -n test -it testnamewebserver --bash				---> take access on test namespace pod.
+
+We can not access pod's container from one namespace to another namespace. When ever we create any service then automatically a DNS will be created and all namespace can communicate via DNA and we can access pod from one namespace to another namespace.
+
+DNS syntax ----> servicename.namespace.svc.cluster.local
+
+command:--- curl myfirstservice.test.svc.cluster.local with this command we can access pod from different namespace.
+
+kubectl delete -n test
 
 kubectl create ns myns			---> create namespace
 
