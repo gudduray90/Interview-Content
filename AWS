@@ -170,3 +170,78 @@ What is a redshift?
 Answer: Amazon redshift is a data warehouse product. It is a fast and powerful, fully managed, petabyte scale data warehouse service in the cloud.
 
 
+SQS
+
+SNS
+
+API Gateway
+
+lambda :-
+
+Lambda is a AWS compute services which run our code without provisioning or managing any servers. Lambda provides high avaliablity to run our code and aws also manage lambda administration, system maintenance, capacity provisioning, automatic scaling, code monitoring and logging.
+
+i.	 	Function	--> Where we will deploy our code
+ii.		Runetime    --> On which language we want to run our code like:- dotnet, GO, Python, ruby, c##, java, nodejs
+iii.	Event/trigger --> Where lambda function will execute
+iv. 	Downstream API --> after execution what lambda function will do.
+
+We can alocate minimum 128 MB memory (RAM) and maximum will be 10,240 MB MB. We acn increase memory size in multiplication of 64 MB means 64+64+64+64 ans so on.
+
+AWS will decide CPU Threads as per define memory size.
+
+There are some time limitation in lambda (defauls 3 sec and max 15 minutes) like if our code coplete there process within 15 minutes then it will be good and labmda charge for only that time period.
+But if our code will take several hours then it will be very costlly in comparision of EC2 so in this case we need to difine time_out means how much time our code will run and after certion period of time it will throw time_out exception.
+
+We will create some role for lambda function that will provide access of services which is running in aws.
+
+We can access multiple services from lambda function or if any services are running in VPC then we can also access those services.
+
+Other services invoke our function directly. We grant the other service permission in the function's resource-based policy, and configure the other service to generate events and invoke lambda function. 
+
+Depending on the service, the invocation can be synchronous or asynchronous. 
+
+There are some services that invoke Lambda functions synchronously (PUSH):-
+
+1. Elastic Load Balancing (Application Load Balancer)
+2. Amazon API Gateway
+3. Amazon CloudFront (Lambda@Edge)
+4. Amazon Kinesis Data Firehose
+5. Amazon Simple Storage Service Batch tec.
+ 
+
+For asynchronous invocation, Lambda queues the event before passing it to your function. The other service gets a success response as soon as the event is queued and isn't aware of what happens afterwards. If an error occurs, Lambda handles retries, and can send failed events to a destination that you configure.
+
+Services that invoke Lambda functions asynchronously (EVENT)
+1. Amazon Simple Storage Service
+2. Amazon Simple Notification Service
+3. Amazon Simple Email Service
+4. AWS CloudFormation
+5. Amazon CloudWatch Logs etc.
+
+When you connect a function to a VPC, Lambda creates an elastic network interface for each subnet in your function's VPC configuration. This process can take several minutes.
+
+If you use Amazon Virtual Private Cloud (Amazon VPC) to host your AWS resources, you can establish a connection between your VPC and Lambda. You can use this connection to invoke your Lambda function without crossing the public internet. To establish a private connection between your VPC and Lambda, create an interface VPC endpoint. Interface endpoints are powered by AWS PrivateLink, which enables you to privately access Lambda APIs without an internet gateway, NAT device, VPN connection, or AWS Direct Connect connection. Instances in your VPC don't need public IP addresses to communicate with Lambda APIs. Traffic between your VPC and Lambda does not leave the AWS network. Each interface endpoint is represented by one or more elastic network interfaces in your subnets. A network interface provides a private IP address that serves as an entry point for traffic to Lambda.
+
+
+
+
+code--->
+import boto3
+from uuid import uuid4
+def lambda_handler(event, context):
+    s3 = boto3.client("s3")
+    dynamodb = boto3.resource('dynamodb')
+    for record in event['Records']:
+        bucket_name = record['s3']['bucket']['name']
+        object_key = record['s3']['object']['key']
+        size = record['s3']['object'].get('size', -1)
+        event_name = record ['eventName']
+        event_time = record['eventTime']
+        dynamoTable = dynamodb.Table('newtable')
+        dynamoTable.put_item(
+            Item={'unique': str(uuid4()), 'Bucket': bucket_name, 'Object': object_key,'Size': size, 'Event': event_name, 'EventTime': event_time})
+
+
+
+ 
+
