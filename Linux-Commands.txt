@@ -1,0 +1,48 @@
+Change user expiry data in linux:-
+
+chage -d 2023-07-23 amitp
+
+AWSManagedRulesCommonRuleSet---WAFestart
+
+cat default-access_log | grep "20/Mar/2023:12:0" | awk '{print $4,$7,$9,$10}' | grep 404 | less
+
+--------------Restart codedeploy agent on ec2--------------
+service codedeploy-agent status
+
+---------------- Check security update --------------------
+on redhat/amazon2/centos:-
+
+yum check-update --security   (It will check available security updates)
+yum update --security (It will apply the security updates)
+
+on ubuntu:-
+
+apt list --upgradable | grep "\-security"   (It will check available security updates)
+apt-get install unattended-upgrades apt-listchanges    (It will apply the security updates)
+
+----------------------------------Allow directory access to any user----------------------------
+setfacl -R -m u:101572@clix.local:r-x /sftpdata/Tezzeract
+
+
+############################ Increase hard and soft limit #######################################
+
+vim /etc/security/limits.conf
+
+root hard nofile 500000
+root soft nofile 500000
+
+devtest-itag.pace-os.com.s3-website.ap-south-1.amazonaws.com
+
+devtest-itag.pace-os.com.s3.ap-south-1.amazonaws.com
+
+
+ami-0e77a764d821cef8d---> PROD-Launchtemplate_20210623 (lt-037d54da663f8aaa9)(SalesPanda--26--May--2023)
+
+############################### Stress command ###########################
+sudo yum update -y
+sudo amazon-linux-extras install epel -y
+sudo yum-config-manager --enable epel
+sudo yum install stress -y
+sudo stress --cpu 12 --timeout 60s
+
+
